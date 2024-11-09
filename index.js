@@ -44,10 +44,10 @@ app.post('/api/adminlogin', async (req, res)=>{
     const checkPass= `select * from admin where password = '${adminpassword}';`
     const user= await db.get(usersql)
     const chepass= await db.get(checkPass)
-    if (user == undefined){
+    if (user === undefined){
         res.status(400)
         res.send('Username is invalid')
-    }else if (chepass == undefined){
+    }else if (chepass === undefined){
         res.send('Wrong Password')
     }else{
         const payload = {username: adminusername}
@@ -58,3 +58,30 @@ app.post('/api/adminlogin', async (req, res)=>{
 })
 
 //User register
+app.get('/api/users', async (req, res)=>{
+    const getSql= `
+    Select * from users;
+    `
+    const users= await db.all(getSql)
+    res.send(users) 
+})
+
+app.post('/api/usersreg', async (req, res)=>{
+    const {username, userpassword}= req.body 
+    const hashedPass = await bcrypt.hash(userpassword, 10)
+    const usercheck = `select * from users where username='${username}';`
+    const userpresent = await db.get(usercheck)
+    if (userpresent != undefined){
+        res.status(400)
+        res.send('user already exists please login')
+        
+    }else{
+        const insertSQL= `
+            Insert into users (username, userpassword)
+            values ('${username}', '${hashedPass}');
+            `
+            await db.run(insertSQL)
+            res.send('registration Successful')
+    }
+}
+)
